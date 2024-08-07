@@ -8,7 +8,13 @@ from django_celery_beat.models import (
     ClockedSchedule,
 )
 
-from collectors.models import Source, AccessKey, SourceGroup, StorageInstance
+from collectors.models import (
+    Source,
+    AccessKey,
+    SourceGroup,
+    StorageInstance,
+    SourceHeaders,
+)
 
 # Unregister all django beat admin models
 admin.site.unregister(
@@ -37,6 +43,13 @@ class IntervalScheduleAdmin(unfold.admin.ModelAdmin):
     search_fields = ("every", "period")
 
 
+@admin.register(SourceHeaders)
+class SourceHeadersAdmin(unfold.admin.ModelAdmin):
+    list_display = ("name",)
+
+    search_fields = ("name",)
+
+
 @admin.register(Source)
 class SourceAdmin(unfold.admin.ModelAdmin):
     list_display = ("group", "name", "interval_schedule", "enabled")
@@ -45,7 +58,7 @@ class SourceAdmin(unfold.admin.ModelAdmin):
 
     list_editable = ("enabled",)
 
-    autocomplete_fields = ("access_key", "group", "interval_schedule")
+    autocomplete_fields = ("access_key", "group", "interval_schedule", "source_headers")
 
     readonly_fields = ("task",)
 
