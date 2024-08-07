@@ -90,7 +90,7 @@ def collect(source_id: int):
     else:
         response = method(complete_url, headers=headers)
         content_type = response.headers.get("content-type") or "application/json"
-        content = response
+        content = response.content
 
     storage = _get_default_storage()
 
