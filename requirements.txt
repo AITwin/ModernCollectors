@@ -1,0 +1,12 @@
+django~=5.0.8
+django-unfold
+django-polymorphic
+setuptools
+celery[redis]~=5.4.0
+django-celery-results
+django-celery-beat
+
+requests~=2.32.3
+azure-storage-blob
+google-cloud-storage
+google-auth
