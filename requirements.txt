@@ -10,3 +10,6 @@ requests~=2.32.3
 azure-storage-blob
 google-cloud-storage
 google-auth
+
+gunicorn
+python-dotenv

@@ -9,7 +9,12 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
 
 import os
 
+import dotenv
 from django.core.asgi import get_asgi_application
+
+dotenv.load_dotenv(
+    dotenv_path=Path(__file__).resolve().parent.parent / ".env"
+)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ModernCollectors.settings")
 
