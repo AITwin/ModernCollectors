@@ -46,7 +46,7 @@ def collect(source_id: int):
 
     # combine url with query parameters
     complete_url = source.url
-    headers = source.headers or {}
+    headers = source.source_headers.headers if source.source_headers else {}
 
     if source.query_params:
         complete_url += "?" + urlencode(source.query_params)

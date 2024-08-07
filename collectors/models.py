@@ -48,6 +48,15 @@ class SourceGroup(models.Model):
         return self.name + " /" + self.storage_slug
 
 
+class SourceHeaders(models.Model):
+    name = models.CharField(max_length=100, help_text="Name of the header")
+
+    headers = models.JSONField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Source(models.Model):
     """
     Model representing a source of data for the collector system.
@@ -118,8 +127,12 @@ class Source(models.Model):
         help_text="Access key for the source if required it will be injected either in headers or query params",
     )
 
-    headers = models.JSONField(
-        blank=True, null=True, help_text="Use [KEY_NAME] to inject access key value"
+    source_headers = models.ForeignKey(
+        "SourceHeaders",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        help_text="Headers to send with the request",
     )
 
     query_params = models.JSONField(blank=True, null=True)
