@@ -131,11 +131,40 @@ class Source(models.Model):
         help_text="File extension to save the data with (json, csv, etc.)",
     )
 
+    paginated = models.BooleanField(
+        default=False,
+        help_text="Is the data paginated, if so, the pagination fields must be filled",
+    )
+
+    pagination_limit = models.IntegerField(
+        default=100,
+        help_text="Limit of records per page",
+    )
+
+    pagination_total_count = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Key to get the total count of records",
+    )
+    pagination_offset_key = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Key to get the offset of the next page",
+    )
+    pagination_result_key = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Key to get the list of records",
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=["storage_slug", "group"], name="unique_name_group"
-            )
+            ),
         ]
 
 

@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime
 from urllib.parse import urlencode
@@ -56,20 +57,47 @@ def collect(source_id: int):
         for header in headers:
             headers[header] = _inject_key(headers[header], source)
 
-    response = method(
-        complete_url,
-        headers=headers,
-        data=source.body,
-    )
+    if source.paginated:
+        data = []
+        total_count = 0
+        content_type = "application/json"
 
-    content_type = response.headers.get("content-type") or "application/json"
+        if "?" not in complete_url:
+            complete_url += "?"
+        else:
+            complete_url += "&"
+
+        # Not while True to avoid infinite loop
+        for _ in range(100):
+            response = method(
+                complete_url
+                + f"limit={source.pagination_limit}&{source.pagination_offset_key}={len(data)}",
+                headers=headers,
+            )
+
+            if response.status_code != 200:
+                response.raise_for_status()
+
+            total_count = response.json().get(
+                source.pagination_total_count, total_count
+            )
+            data.extend(response.json().get(source.pagination_result_key, []))
+
+            if len(data) >= total_count:
+                break
+
+        content = json.dumps(data).encode("utf-8")
+    else:
+        response = method(complete_url, headers=headers)
+        content_type = response.headers.get("content-type") or "application/json"
+        content = response
 
     storage = _get_default_storage()
 
     file_name = f"{datetime.now().isoformat()}.{source.extension}"
 
     storage.save(
-        response.content,
+        content,
         str(os.path.join(source.group.storage_slug, source.storage_slug, file_name)),
         content_type,
     )
