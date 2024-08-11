@@ -65,9 +65,15 @@ class SourceAdmin(unfold.admin.ModelAdmin):
 
 @admin.register(AccessKey)
 class AccessKeyAdmin(unfold.admin.ModelAdmin):
-    list_display = ("name","key",)
+    list_display = (
+        "name",
+        "key",
+    )
 
-    search_fields = ("name", "key",)
+    search_fields = (
+        "name",
+        "key",
+    )
 
 
 @admin.register(StorageInstance)
