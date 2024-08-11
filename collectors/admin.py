@@ -60,7 +60,7 @@ class SourceAdmin(unfold.admin.ModelAdmin):
         "group",
         "name",
         "interval_schedule",
-        "had_error_in_last_7_days",
+        "is_sane",
         "success_count_in_past_7_days",
         "error_count_in_past_7_days",
         "enabled",
@@ -76,30 +76,30 @@ class SourceAdmin(unfold.admin.ModelAdmin):
 
     @display(description="Error (7d)")
     def error_count_in_past_7_days(self, obj):
-        if obj.periodic_task is None:
+        if obj.task is None:
             return 0
         return TaskResult.objects.filter(
-            periodic_task_name=obj.periodic_task.name,
+            periodic_task_name=obj.task.name,
             status="FAILURE",
             date_done__gte=datetime.now() - timedelta(days=7),
         ).count()
 
     @display(description="Success (7d)")
     def success_count_in_past_7_days(self, obj):
-        if obj.periodic_task is None:
+        if obj.task is None:
             return 0
         return TaskResult.objects.filter(
-            periodic_task_name=obj.periodic_task.name,
+            periodic_task_name=obj.task.name,
             status="SUCCESS",
             date_done__gte=datetime.now() - timedelta(days=7),
         ).count()
 
-    @display(description="Had error in last 7 days", boolean=True)
-    def had_error_in_last_7_days(self, obj):
-        if obj.periodic_task is None:
+    @display(description="Is sane", boolean=True)
+    def is_sane(self, obj):
+        if obj.task is None:
             return False
-        return TaskResult.objects.filter(
-            periodic_task_name=obj.periodic_task.name,
+        return not TaskResult.objects.filter(
+            periodic_task_name=obj.task.name,
             status="FAILURE",
             date_done__gte=datetime.now() - timedelta(days=7),
         ).exists()
