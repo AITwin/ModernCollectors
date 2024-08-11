@@ -36,11 +36,11 @@ admin.site.unregister(GroupResult)
 
 @admin.register(TaskResult)
 class TaskResultAdmin(unfold.admin.ModelAdmin):
-    list_display = ("task_id", "status", "date_done")
+    list_display = ("periodic_task_name", "status", "date_done")
 
     search_fields = ("task_id", "status")
 
-    list_filter = ("status",)
+    list_filter = ("status", "periodic_task_name")
 
     readonly_fields = ("task_id", "status", "date_done", "result", "traceback")
 
