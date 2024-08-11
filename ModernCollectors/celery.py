@@ -9,6 +9,9 @@ app = Celery("celert-collectors")
 app.conf.broker_url = "redis://localhost:6379/0"
 
 app.config_from_object("django.conf:settings", namespace="COLLECTORS")
+app.conf.update(
+    result_extended=True,
+)
 
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
