@@ -10,7 +10,7 @@ from django_celery_beat.models import (
     ClockedSchedule,
 )
 from django_celery_results.models import TaskResult
-from unfold.decorators import display
+from unfold.decorators import display, action
 
 from collectors.models import (
     Source,
@@ -19,6 +19,7 @@ from collectors.models import (
     StorageInstance,
     SourceHeaders,
 )
+from collectors.tasks import collect
 
 # Unregister all django beat admin models
 admin.site.unregister(
@@ -66,6 +67,8 @@ class SourceAdmin(unfold.admin.ModelAdmin):
         "enabled",
     )
 
+    actions = ["run_now"]
+
     list_filter = ("group", "enabled")
 
     list_editable = ("enabled",)
@@ -73,6 +76,15 @@ class SourceAdmin(unfold.admin.ModelAdmin):
     autocomplete_fields = ("access_key", "group", "interval_schedule", "source_headers")
 
     readonly_fields = ("task",)
+
+    @action(description="Run now")
+    def run_now(self, request, queryset):
+        for source in queryset:
+            collect.delay(source.id)
+
+        self.message_user(request, f"{len(queryset)} sources have been scheduled to run now.")
+
+        return None
 
     @display(description="Error (7d)")
     def error_count_in_past_7_days(self, obj):
