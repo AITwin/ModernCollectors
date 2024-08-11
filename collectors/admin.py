@@ -11,7 +11,7 @@ from django_celery_beat.models import (
     PeriodicTask,
     SolarSchedule,
 )
-from django_celery_results.models import TaskResult
+from django_celery_results.models import TaskResult, GroupResult
 from unfold.admin import ModelAdmin
 from unfold.decorators import display, action
 from unfold.widgets import UnfoldAdminSelectWidget, UnfoldAdminTextInputWidget
@@ -31,6 +31,7 @@ admin.site.unregister(CrontabSchedule)
 admin.site.unregister(SolarSchedule)
 admin.site.unregister(ClockedSchedule)
 admin.site.unregister(TaskResult)
+admin.site.unregister(GroupResult)
 
 
 @admin.register(TaskResult)
