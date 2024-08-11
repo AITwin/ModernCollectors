@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import unfold.admin
 from django.contrib import admin
 from django_celery_beat.models import (
@@ -7,6 +9,8 @@ from django_celery_beat.models import (
     SolarSchedule,
     ClockedSchedule,
 )
+from django_celery_results.models import TaskResult
+from unfold.decorators import display
 
 from collectors.models import (
     Source,
@@ -52,7 +56,15 @@ class SourceHeadersAdmin(unfold.admin.ModelAdmin):
 
 @admin.register(Source)
 class SourceAdmin(unfold.admin.ModelAdmin):
-    list_display = ("group", "name", "access_key", "interval_schedule", "enabled")
+    list_display = (
+        "group",
+        "name",
+        "interval_schedule",
+        "had_error_in_last_7_days",
+        "success_count_in_past_7_days",
+        "error_count_in_past_7_days",
+        "enabled",
+    )
 
     list_filter = ("group", "enabled")
 
@@ -61,6 +73,36 @@ class SourceAdmin(unfold.admin.ModelAdmin):
     autocomplete_fields = ("access_key", "group", "interval_schedule", "source_headers")
 
     readonly_fields = ("task",)
+
+    @display(description="Error (7d)")
+    def error_count_in_past_7_days(self, obj):
+        if obj.periodic_task is None:
+            return 0
+        return TaskResult.objects.filter(
+            periodic_task_name=obj.periodic_task.name,
+            status="FAILURE",
+            date_done__gte=datetime.now() - timedelta(days=7),
+        ).count()
+
+    @display(description="Success (7d)")
+    def success_count_in_past_7_days(self, obj):
+        if obj.periodic_task is None:
+            return 0
+        return TaskResult.objects.filter(
+            periodic_task_name=obj.periodic_task.name,
+            status="SUCCESS",
+            date_done__gte=datetime.now() - timedelta(days=7),
+        ).count()
+
+    @display(description="Had error in last 7 days", boolean=True)
+    def had_error_in_last_7_days(self, obj):
+        if obj.periodic_task is None:
+            return False
+        return TaskResult.objects.filter(
+            periodic_task_name=obj.periodic_task.name,
+            status="FAILURE",
+            date_done__gte=datetime.now() - timedelta(days=7),
+        ).exists()
 
 
 @admin.register(AccessKey)
