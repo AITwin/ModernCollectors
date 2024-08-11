@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 import unfold.admin
 from django.contrib import admin
-from django_celery_beat.admin import ClockedScheduleAdmin as BaseClockedScheduleAdmin
 from django_celery_beat.admin import PeriodicTaskAdmin as BasePeriodicTaskAdmin
 from django_celery_beat.admin import PeriodicTaskForm, TaskSelectWidget
 from django_celery_beat.models import (
@@ -31,6 +30,18 @@ admin.site.unregister(IntervalSchedule)
 admin.site.unregister(CrontabSchedule)
 admin.site.unregister(SolarSchedule)
 admin.site.unregister(ClockedSchedule)
+admin.site.unregister(TaskResult)
+
+
+@admin.register(TaskResult)
+class TaskResultAdmin(unfold.admin.ModelAdmin):
+    list_display = ("task_id", "status", "date_done")
+
+    search_fields = ("task_id", "status")
+
+    list_filter = ("status",)
+
+    readonly_fields = ("task_id", "status", "date_done", "result", "traceback")
 
 
 class UnfoldTaskSelectWidget(UnfoldAdminSelectWidget, TaskSelectWidget):
@@ -54,11 +65,6 @@ class IntervalScheduleAdmin(ModelAdmin):
     list_display = ("every", "period")
 
     search_fields = ("every", "period")
-
-
-@admin.register(ClockedSchedule)
-class ClockedScheduleAdmin(BaseClockedScheduleAdmin, ModelAdmin):
-    pass
 
 
 @admin.register(SourceGroup)
