@@ -117,7 +117,13 @@ class Source(models.Model):
         default=Method.GET,
     )
 
-    url = models.URLField(blank=True, null=True, max_length=512)
+    url = models.URLField(max_length=512)
+
+    extension = models.CharField(
+        max_length=100,
+        help_text="File extension to save the data with (json, csv, etc.)",
+        default="json",
+    )
 
     access_key = models.ForeignKey(
         "AccessKey",
@@ -138,11 +144,6 @@ class Source(models.Model):
     query_params = models.JSONField(blank=True, null=True)
 
     body = models.JSONField(blank=True, null=True)
-
-    extension = models.CharField(
-        max_length=100,
-        help_text="File extension to save the data with (json, csv, etc.)",
-    )
 
     paginated = models.BooleanField(
         default=False,
