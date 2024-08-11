@@ -52,7 +52,7 @@ class SourceHeadersAdmin(unfold.admin.ModelAdmin):
 
 @admin.register(Source)
 class SourceAdmin(unfold.admin.ModelAdmin):
-    list_display = ("group", "name", "interval_schedule", "enabled")
+    list_display = ("group", "name", "access_key", "interval_schedule", "enabled")
 
     list_filter = ("group", "enabled")
 
