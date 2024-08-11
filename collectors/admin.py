@@ -2,36 +2,63 @@ from datetime import datetime, timedelta
 
 import unfold.admin
 from django.contrib import admin
+from django_celery_beat.admin import ClockedScheduleAdmin as BaseClockedScheduleAdmin
+from django_celery_beat.admin import PeriodicTaskAdmin as BasePeriodicTaskAdmin
+from django_celery_beat.admin import PeriodicTaskForm, TaskSelectWidget
 from django_celery_beat.models import (
-    PeriodicTask,
-    IntervalSchedule,
-    CrontabSchedule,
-    SolarSchedule,
     ClockedSchedule,
+    CrontabSchedule,
+    IntervalSchedule,
+    PeriodicTask,
+    SolarSchedule,
 )
 from django_celery_results.models import TaskResult
+from unfold.admin import ModelAdmin
 from unfold.decorators import display, action
+from unfold.widgets import UnfoldAdminSelectWidget, UnfoldAdminTextInputWidget
 
 from collectors.models import (
     Source,
     AccessKey,
-    SourceGroup,
     StorageInstance,
     SourceHeaders,
+    SourceGroup,
 )
 from collectors.tasks import collect
 
-# Unregister all django beat admin models
-admin.site.unregister(
-    [PeriodicTask, IntervalSchedule, CrontabSchedule, SolarSchedule, ClockedSchedule]
-)
+admin.site.unregister(PeriodicTask)
+admin.site.unregister(IntervalSchedule)
+admin.site.unregister(CrontabSchedule)
+admin.site.unregister(SolarSchedule)
+admin.site.unregister(ClockedSchedule)
+
+
+class UnfoldTaskSelectWidget(UnfoldAdminSelectWidget, TaskSelectWidget):
+    pass
+
+
+class UnfoldPeriodicTaskForm(PeriodicTaskForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["task"].widget = UnfoldAdminTextInputWidget()
+        self.fields["regtask"].widget = UnfoldTaskSelectWidget()
 
 
 @admin.register(PeriodicTask)
-class PeriodicTaskAdmin(unfold.admin.ModelAdmin):
-    list_display = ("name", "task", "enabled", "last_run_at", "total_run_count")
+class PeriodicTaskAdmin(BasePeriodicTaskAdmin, ModelAdmin):
+    form = UnfoldPeriodicTaskForm
 
-    search_fields = ("name", "task")
+
+@admin.register(IntervalSchedule)
+class IntervalScheduleAdmin(ModelAdmin):
+    list_display = ("every", "period")
+
+    search_fields = ("every", "period")
+
+
+@admin.register(ClockedSchedule)
+class ClockedScheduleAdmin(BaseClockedScheduleAdmin, ModelAdmin):
+    pass
 
 
 @admin.register(SourceGroup)
@@ -39,13 +66,6 @@ class SourceGroupAdmin(unfold.admin.ModelAdmin):
     list_display = ("name",)
 
     search_fields = ("name",)
-
-
-@admin.register(IntervalSchedule)
-class IntervalScheduleAdmin(unfold.admin.ModelAdmin):
-    list_display = ("every", "period")
-
-    search_fields = ("every", "period")
 
 
 @admin.register(SourceHeaders)
@@ -82,7 +102,9 @@ class SourceAdmin(unfold.admin.ModelAdmin):
         for source in queryset:
             collect.delay(source.id)
 
-        self.message_user(request, f"{len(queryset)} sources have been scheduled to run now.")
+        self.message_user(
+            request, f"{len(queryset)} sources have been scheduled to run now."
+        )
 
         return None
 
