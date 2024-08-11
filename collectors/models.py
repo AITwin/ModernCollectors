@@ -186,11 +186,14 @@ class AccessKey(models.Model):
     Model representing an access key for a source.
     """
 
+    name = models.CharField(
+        max_length=100, help_text="Name of the access key", unique=True
+    )
     key = models.CharField(max_length=100, help_text="Key name")
     value = models.CharField(max_length=100, help_text="Key value")
 
     def __str__(self):
-        return self.key
+        return f"{self.name} [{self.key}]"
 
 
 class StorageInstance(models.Model):
